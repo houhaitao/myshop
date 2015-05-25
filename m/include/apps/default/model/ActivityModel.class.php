@@ -41,6 +41,69 @@ class ActivityModel extends BaseModel {
     }
 
     /**
+     * 获取促销活动的信息
+     * @param $act_id
+     */
+    function get_activity_base_info($act_id)
+    {
+        $sql = "select * from " . $this->pre . 'favourable_activity where act_id='.$act_id;
+        $res = $this->query($sql);
+        $info = false;
+        if(is_array($res) && sizeof($res)>0)
+        {
+            foreach($res as $r)
+            {
+                $info = $r;
+            }
+        }
+        return $info;
+    }
+
+    /**
+     * 校验限时抢购商品是否合法
+     * @param $act_id
+     * @param $good_id
+     */
+    function check_xsqg_active_goods($act_info,$good_id)
+    {
+        $xs_pre = strlen('限时抢购');
+        if(substr($act_info['act_name'],0,$xs_pre)=='限时抢购')
+        {
+            $time = time();
+            $format_start_time = strtotime(date('Y-m-d ') . date("H:i:s", $act_info['start_time']+8*3600));
+            $format_end_time = strtotime(date('Y-m-d ') . date("H:i:s", $act_info['end_time']+8*3600));
+            if ($format_start_time > $time || $format_end_time < $time) {
+                ;
+            } else {
+                $children = '';
+                $brand = '';
+                $mygoods = '';
+                if ($act_info['act_range'] != FAR_ALL && !empty($act_info['act_range_ext'])) {
+                    if ($act_info['act_range'] == FAR_CATEGORY) {
+                        $children = " cat_id " . db_create_in(get_children_cat($act_info['act_range_ext']));
+                    } elseif ($act_info['act_range'] == FAR_BRAND) {
+                        $brand = "g.brand_id " . db_create_in($act_info['act_range_ext']);
+                    } else {
+                        $mygoods = " AND g.goods_id " . db_create_in($act_info['act_range_ext']);
+                    }
+                }
+                $goodslist = $this->category_get_goods($children, $brand, $mygoods, 0, 0, ' and g.goods_id=' . $good_id, 1, 1, 'last_update', '', $act_info);
+                $keys = array_keys($goodslist);
+                if (in_array($good_id, $keys)) {
+                    $goods = array();
+                    $goods['promote_price'] = $goodslist[$good_id]['promote_price'];
+                    $goods['real_promote_price'] = $goodslist[$good_id]['real_promote_price'];
+                    $goods['gmt_end_time'] = $format_end_time;
+                    return $goods;
+                }
+            }
+        }
+        return false;
+    }
+
+
+
+    /**
      * 获得分类下的商品
      * @param unknown $children
      * @param unknown $brand
@@ -54,7 +117,7 @@ class ActivityModel extends BaseModel {
      * @param unknown $order
      * @return multitype:
      */
-    function category_get_goods($children, $brand, $goods, $min, $max, $ext, $size, $page, $sort, $order) {
+    function category_get_goods($children, $brand, $goods, $min, $max, $ext, $size, $page, $sort, $order,$act_info=false) {
         $display = $GLOBALS['display'];
         $children = $children ? 'AND (' . $children . ' OR ' . Model('Goods')->get_extension_goods($children) . ')' : '';
         $where = "g.is_on_sale = 1 AND g.is_alone_sale = 1 " . $children . " AND g.is_delete = 0 " . $goods;
@@ -78,6 +141,21 @@ class ActivityModel extends BaseModel {
             } else {
                 $promote_price = 0;
             }
+
+            if($act_info !== false)
+            {
+                if($act_info['act_type']=='1') //减免
+                {
+                    $target_price = $promote_price == 0 ?  $row['shop_price'] : $promote_price;
+                    $promote_price = $target_price - $act_info['act_type_ext'];
+                }
+                elseif($act_info['act_type']=='2') //打折
+                {
+                    $target_price = $row['market_price'];
+                    $promote_price = (($target_price * $act_info['act_type_ext'])/100);
+                }
+            }
+
 
             /* 处理商品水印图片 */
             $watermark_img = '';
@@ -109,10 +187,11 @@ class ActivityModel extends BaseModel {
             $arr[$row['goods_id']]['shop_price'] = price_format($row['shop_price']);
             $arr[$row['goods_id']]['type'] = $row['goods_type'];
             $arr[$row['goods_id']]['promote_price'] = ($promote_price > 0) ? price_format($promote_price) : '';
+            $arr[$row['goods_id']]['real_promote_price'] = ($promote_price > 0) ? $promote_price : '';
             $arr[$row['goods_id']]['goods_thumb'] = get_image_path($row['goods_id'], $row['goods_thumb'], true);
             $arr[$row['goods_id']]['goods_img'] = get_image_path($row['goods_id'], $row['goods_img']);
             $arr[$row['goods_id']]['url'] = url('goods/index', array(
-                'id' => $row['goods_id']
+                'id' => $row['goods_id'],'act_id'=>$act_info['act_id']
             ));
             $arr[$row['goods_id']]['sales_count'] = $this->get_sales_volume($row['goods_id']);
             $arr[$row['goods_id']]['sc'] = model('GoodsBase')->get_goods_collect($row['goods_id']);

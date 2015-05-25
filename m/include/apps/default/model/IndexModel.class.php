@@ -33,7 +33,7 @@ class IndexModel extends CommonModel {
             $type = 'g.is_best = 1';
         }
         // 取出所有符合条件的商品数据，并将结果存入对应的推荐类型数组中
-        $sql = 'SELECT g.goods_id, g.goods_name, g.goods_name_style, g.market_price, g.shop_price AS org_price, g.promote_price, ' . "IFNULL(mp.user_price, g.shop_price * '$_SESSION[discount]') AS shop_price, " . "promote_start_date, promote_end_date, g.goods_brief, g.goods_thumb, g.goods_img, RAND() AS rnd " . 'FROM ' . $this->pre . 'goods AS g ' . "LEFT JOIN " . $this->pre . "member_price AS mp " . "ON mp.goods_id = g.goods_id AND mp.user_rank = '$_SESSION[user_rank]' ";
+        $sql = 'SELECT g.goods_id, g.goods_name,g.cat_id, g.goods_name_style, g.market_price, g.shop_price AS org_price, g.promote_price, ' . "IFNULL(mp.user_price, g.shop_price * '$_SESSION[discount]') AS shop_price, " . "promote_start_date, promote_end_date, g.goods_brief, g.goods_thumb, g.goods_img, RAND() AS rnd " . 'FROM ' . $this->pre . 'goods AS g ' . "LEFT JOIN " . $this->pre . "member_price AS mp " . "ON mp.goods_id = g.goods_id AND mp.user_rank = '$_SESSION[user_rank]' ";
         $sql .= ' WHERE g.is_on_sale = 1 AND g.is_alone_sale = 1 AND g.is_delete = 0 AND ' . $type;
         $sql .= ' ORDER BY g.sort_order, g.last_update DESC limit ' . $start . ', ' . $limit;
         
@@ -46,12 +46,16 @@ class IndexModel extends CommonModel {
                 $goods[$key]['promote_price'] = '';
             }
             $goods[$key]['id'] = $vo['goods_id'];
+            $goods[$key]['cat_id'] = array($vo['cat_id']);
             $goods[$key]['name'] = $vo['goods_name'];
             $goods[$key]['brief'] = $vo['goods_brief'];
             $goods[$key]['goods_style_name'] = add_style($vo['goods_name'], $vo['goods_name_style']);
             $goods[$key]['short_name'] = C('goods_name_length') > 0 ? sub_str($vo['goods_name'], C('goods_name_length')) : $vo['goods_name'];
             $goods[$key]['short_style_name'] = add_style($goods[$key] ['short_name'], $vo['goods_name_style']);
             $goods[$key]['market_price'] = price_format($vo['market_price']);
+            $goods[$key]['real_shop_price'] = $vo['shop_price'];
+            $goods[$key]['real_market_price'] = $vo['market_price'];
+            $goods[$key]['real_promote_price'] = ($promote_price > 0) ? $promote_price : 0;
             $goods[$key]['shop_price'] = price_format($vo['shop_price']);
             $goods[$key]['thumb'] = get_image_path($vo['goods_id'], $vo['goods_thumb'], true);
             $goods[$key]['goods_img'] = get_image_path($vo['goods_id'], $vo['goods_img']);
@@ -68,8 +72,9 @@ class IndexModel extends CommonModel {
                 $goods[$key]['mysc'] = $rs;
             }
             $goods[$key]['promotion'] = model('GoodsBase')->get_promotion_show($vo['goods_id']);
-            $type_goods[$type][] = $goods[$key];
+            $type_goods[$type][$vo['goods_id']] = $goods[$key];
         }
+        $type_goods[$type] = model('Category')->format_goods_list($type_goods[$type]);
         return $type_goods[$type];
     }
 

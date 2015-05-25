@@ -430,7 +430,7 @@ class OrderModel extends BaseModel {
      * @param   integer $parent     基本件
      * @return  boolean
      */
-    function addto_cart($goods_id, $num = 1, $spec = array(), $parent = 0) {
+    function addto_cart($goods_id, $num = 1, $spec = array(), $parent = 0, $act_id=false) {
         ECTouch::err()->clean();
         $_parent_id = $parent;
 

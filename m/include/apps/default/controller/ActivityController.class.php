@@ -80,6 +80,68 @@ class ActivityController extends CommonController {
     }
 
     /**
+     * 限时抢购
+     */
+    public function xsgoods_list()
+    {
+        $this->parameter();
+        $this->assign('page', $this->page);
+        $this->assign('size', $this->size);
+        $this->assign('sort', $this->sort);
+        $this->assign('order', $this->order);
+        $this->display('activity_xsgoods_list.dwt');
+    }
+
+    /**
+     * 限时抢购活动列表
+     */
+    public function xsasynclist_list()
+    {
+        $this->parameter();
+        $time = time();
+
+        $my_res = $this->model->table('favourable_activity')->field()->where("act_name like '限时抢购%' and start_time<=" . $time . " and end_time>=" . $time)->order('sort_order ASC')->select();
+        $list = array();
+        $sayList = array();
+        $goods_ids = array();
+        foreach($my_res as $res) {
+
+            $format_start_time = strtotime(date('Y-m-d ') . date("H:i:s", $res['start_time']+8*3600));
+            $format_end_time = strtotime(date('Y-m-d ') . date("H:i:s", $res['end_time']+8*3600));
+            if($format_start_time > $time || $format_end_time < $time)
+            {
+                continue;
+            }
+
+            if ($res['act_range'] != FAR_ALL && !empty($res['act_range_ext'])) {
+                if ($res['act_range'] == FAR_CATEGORY) {
+                    $this->children = " cat_id " . db_create_in(get_children_cat($res['act_range_ext']));
+                } elseif ($res['act_range'] == FAR_BRAND) {
+                    $this->brand = "g.brand_id " . db_create_in($res['act_range_ext']);
+                } else {
+                    $this->goods = " AND g.goods_id " . db_create_in($res['act_range_ext']);
+                }
+            }
+            $asyn_last = intval(I('post.last')) + 1;
+            $this->size = I('post.amount');
+
+            $this->page = ($asyn_last > 0) ? ceil($asyn_last / $this->size) : 1;
+            $goodslist = model('Activity')->category_get_goods($this->children, $this->brand, $this->goods, $this->price_min, $this->price_max, $this->ext, $this->size, $this->page, $this->sort, $this->order,$res);
+            foreach ($goodslist as $key => $value) {
+                if(!in_array($key, $goods_ids)) {
+                    $this->assign('act_goods', $value);
+                    $sayList [] = array(
+                        'single_item' => ECTouch::view()->fetch('library/asynclist_info.lbi')
+                    );
+                    $goods_ids[] = $key;
+                }
+            }
+        }
+        die(json_encode($sayList));
+        exit();
+    }
+
+    /**
      * 优惠活动 - 活动商品列表 -异步加载
      */
     public function asynclist_list() {

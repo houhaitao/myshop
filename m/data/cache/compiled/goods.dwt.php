@@ -122,7 +122,7 @@ if ($this->_foreach['spec']['total'] > 0):
         </div>
       </section>
       <div class="ect-padding-lr ect-padding-tb goods-submit">
-        <div><a type="botton" class="btn btn-info ect-btn-info ect-colorf" href="javascript:addToCart_quick(<?php echo $this->_var['goods']['goods_id']; ?>)"><?php echo $this->_var['lang']['buy_now']; ?></a></div>
+        <div><a type="botton" class="btn btn-info ect-btn-info ect-colorf" href="javascript:addToCart_quick(<?php echo $this->_var['goods']['goods_id']; ?>,0,'<?php echo $this->_var['act_id']; ?>')"><?php echo $this->_var['lang']['buy_now']; ?></a></div>
        </div>
       <section class="user-tab ect-border-bottom0"> 
       <div id="is-nav-tabs" style="height:3.15em; display:none;"></div>
@@ -205,7 +205,7 @@ function changePrice(type)
   if(!/^[0-9]*$/.test(qty)){qty = document.getElementById('back_number').value;}
   document.getElementById('goods_number').value = qty;
   var attr = getSelectedAttributes(document.forms['ECS_FORMBUY']);
-  $.get('<?php echo url("goods/price");?>', {'id':goodsId,'attr':attr,'number':qty}, function(data){
+  $.get('<?php echo url("goods/price");?>', {'id':goodsId,'attr':attr,'number':qty,'act_id':'<?php echo $this->_var['act_id']; ?>'}, function(data){
     changePriceResponse(data);
   }, 'json');
 }

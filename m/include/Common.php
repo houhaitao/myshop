@@ -536,7 +536,6 @@ function U($url='',$vars='',$suffix=true,$domain=false) {
         parse_str($info['query'],$params);
         $vars = array_merge($params,$vars);
     }
-    
     // URL组装
     $depr       =   C('URL_PATHINFO_DEPR');
     $urlCase    =   C('URL_CASE_INSENSITIVE');

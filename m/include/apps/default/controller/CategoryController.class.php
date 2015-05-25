@@ -318,7 +318,7 @@ class CategoryController extends CommonController {
         }
         $start = ($this->page - 1) * $this->size;
         /* 获得商品列表 */
-        $sql = 'SELECT g.goods_id, g.goods_name, g.goods_name_style, g.market_price, g.is_new, g.is_best, g.is_hot, g.shop_price AS org_price, ' . "IFNULL(mp.user_price, g.shop_price * '$_SESSION[discount]') AS shop_price, g.promote_price, g.goods_type, " . 'g.promote_start_date, g.promote_end_date, g.goods_brief, g.goods_thumb , g.goods_img ' . 'FROM ' . $this->model->pre . 'goods AS g ' . ' LEFT JOIN ' . $this->model->pre . 'touch_goods AS xl ' . ' ON g.goods_id=xl.goods_id ' . ' LEFT JOIN ' . $this->model->pre . 'member_price AS mp ' . "ON mp.goods_id = g.goods_id AND mp.user_rank = '$_SESSION[user_rank]' " . "WHERE $where $this->ext ORDER BY $this->sort $this->order LIMIT $start , $this->size";
+        $sql = 'SELECT g.goods_id,g.cat_id, g.goods_name, g.goods_name_style, g.market_price, g.is_new, g.is_best, g.is_hot, g.shop_price AS org_price, ' . "IFNULL(mp.user_price, g.shop_price * '$_SESSION[discount]') AS shop_price, g.promote_price, g.goods_type, " . 'g.promote_start_date, g.promote_end_date, g.goods_brief, g.goods_thumb , g.goods_img ' . 'FROM ' . $this->model->pre . 'goods AS g ' . ' LEFT JOIN ' . $this->model->pre . 'touch_goods AS xl ' . ' ON g.goods_id=xl.goods_id ' . ' LEFT JOIN ' . $this->model->pre . 'member_price AS mp ' . "ON mp.goods_id = g.goods_id AND mp.user_rank = '$_SESSION[user_rank]' " . "WHERE $where $this->ext ORDER BY $this->sort $this->order LIMIT $start , $this->size";
         $res = $this->model->query($sql);
         $arr = array();
         foreach ($res as $row) {
@@ -354,14 +354,18 @@ class CategoryController extends CommonController {
             $arr[$row['goods_id']]['goods_brief'] = $row['goods_brief'];
             $arr[$row['goods_id']]['goods_style_name'] = add_style($row['goods_name'], $row['goods_name_style']);
             $arr[$row['goods_id']]['market_price'] = price_format($row['market_price']);
+            $arr[$row['goods_id']]['real_market_price'] = $row['market_price'];
             $arr[$row['goods_id']]['shop_price'] = price_format($row['shop_price']);
+            $arr[$row['goods_id']]['real_shop_price'] = $row['shop_price'];
             $arr[$row['goods_id']]['type'] = $row['goods_type'];
             $arr[$row['goods_id']]['promote_price'] = ($promote_price > 0) ? price_format($promote_price) : '';
+            $arr[$row['goods_id']]['real_promote_price'] = ($promote_price > 0) ? $promote_price : 0;
             $arr[$row['goods_id']]['goods_thumb'] = get_image_path($row['goods_id'], $row['goods_thumb'], true);
             $arr[$row['goods_id']]['goods_img'] = get_image_path($row['goods_id'], $row['goods_img']);
             $arr[$row['goods_id']]['url'] = url('goods/index', array(
                 'id' => $row['goods_id']
             ));
+            $arr[$row['goods_id']]['cat_id'] = array($row['cat_id']);
             $arr[$row['goods_id']]['sales_count'] = model('GoodsBase')->get_sales_count($row['goods_id']);
             $arr[$row['goods_id']]['sc'] = model('GoodsBase')->get_goods_collect($row['goods_id']);
             $arr[$row['goods_id']]['mysc'] = 0;
@@ -377,8 +381,13 @@ class CategoryController extends CommonController {
                 $arr[$row['goods_id']]['mysc'] = $rs;
             }
             $arr[$row['goods_id']]['promotion'] = model('GoodsBase')->get_promotion_show($row['goods_id']);
+
         }
-        return $arr;
+        //格式化商品列表
+        $finals = model('Category')->format_goods_list($arr);
+
+
+        return $finals;
     }
 
 }

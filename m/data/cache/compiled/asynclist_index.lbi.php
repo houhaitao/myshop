@@ -5,7 +5,7 @@
     <dt>
       <h4 class="title"><a href="<?php echo $this->_var['hot_goods']['url']; ?>"><?php echo $this->_var['hot_goods']['name']; ?></a></h4>
     </dt>
-    <dd class="dd-price"><span class="pull-left"><strong>价格：<b class="ect-colory"><?php if ($this->_var['hot_goods']['promote_price']): ?><?php echo $this->_var['hot_goods']['promote_price']; ?><?php else: ?><?php echo $this->_var['hot_goods']['shop_price']; ?><?php endif; ?></b></strong> <small class="ect-margin-lr"><?php echo $this->_var['hot_goods']['market_price']; ?></del></small></span> <span class="ect-pro-price"> 
+    <dd class="dd-price"><span class="pull-left"><strong>价格：<b class="ect-colory"><?php if ($this->_var['hot_goods']['active_price']): ?><?php echo $this->_var['hot_goods']['active_price']; ?><?php else: ?><?php echo $this->_var['hot_goods']['shop_price']; ?><?php endif; ?></b></strong> <small class="ect-margin-lr"><?php echo $this->_var['hot_goods']['market_price']; ?></del></small></span> <span class="ect-pro-price">
       
       <?php if ($this->_var['hot_goods']['promotion']): ?> 
       <?php $_from = $this->_var['hot_goods']['promotion']; if (!is_array($_from) && !is_object($_from)) { settype($_from, 'array'); }; $this->push_vars('', 'promotion');if (count($_from)):

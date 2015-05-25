@@ -175,6 +175,8 @@ class GoodsModel extends BaseModel {
         return $arr;
     }
 
+
+
     /**
      * 获得属性相同的商品
      *
@@ -368,6 +370,8 @@ class GoodsModel extends BaseModel {
         }
         return db_create_in($arr, 'g.goods_id');
     }
+
+
 
     /**
      * 获得指定的规格的价格

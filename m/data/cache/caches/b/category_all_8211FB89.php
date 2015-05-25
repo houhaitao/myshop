@@ -1,4 +1,4 @@
-<?php exit;?>a:3:{s:8:"template";a:4:{i:0;s:38:"/web/m/themes/default/category_all.dwt";i:1;s:45:"/web/m/themes/default/library/page_header.lbi";i:2;s:40:"/web/m/themes/default/library/search.lbi";i:3;s:45:"/web/m/themes/default/library/page_footer.lbi";}s:7:"expires";i:1432193254;s:8:"maketime";i:1432189654;}<!DOCTYPE html>
+<?php exit;?>a:3:{s:8:"template";a:4:{i:0;s:51:"E:\web\www\myshop\m/themes/default/category_all.dwt";i:1;s:58:"E:\web\www\myshop\m/themes/default/library/page_header.lbi";i:2;s:53:"E:\web\www\myshop\m/themes/default/library/search.lbi";i:3;s:58:"E:\web\www\myshop\m/themes/default/library/page_footer.lbi";}s:7:"expires";i:1432474478;s:8:"maketime";i:1432470878;}<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
@@ -20,7 +20,7 @@
      	<div class="media panel-body">
             <img class="pull-left" src="data/attached/cat_image/1144ca6f0299ee7ff8ac9eef313b3540.png">
             <div class="pull-left ect-category-right">
-                <h3>良运生活超市</h3>
+                <h3>日用超市</h3>
                 <h5>                                     储值卡 
                                                 /            洗化用品 
                                                 /            进口食品 
@@ -39,7 +39,7 @@
      	<div class="media panel-body">
             <img class="pull-left" src="data/attached/cat_image/ca6b2f152484f8ef844b283c9a69126a.png">
             <div class="pull-left ect-category-right">
-                <h3>海外直达</h3>
+                <h3>东北特产</h3>
                 <h5>                                     咖啡 
                                                 /            葡萄酒 
                                                 /            蜂蜜 
@@ -59,7 +59,7 @@
      	<div class="media panel-body">
             <img class="pull-left" src="data/attached/cat_image/d6e058b169303dfef3730c47a466a617.png">
             <div class="pull-left ect-category-right">
-                <h3>养生佳品</h3>
+                <h3>进口鲜果</h3>
                 <h5>                                     松仁乳 
                                                 /            黑蒜系列 
                         </h5>
@@ -76,7 +76,7 @@
      	<div class="media panel-body">
             <img class="pull-left" src="data/attached/cat_image/3f47b7afbd67a4e951f669464b9c805f.png">
             <div class="pull-left ect-category-right">
-                <h3>米面粮油</h3>
+                <h3>水产速递</h3>
                 <h5>                                     食用油 
                                                 /            大米 
                                                 /            面粉 

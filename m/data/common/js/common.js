@@ -11,13 +11,14 @@ function get_asynclist(url, src) {
 /* *
  * 添加商品到购物车 
  */
-function addToCart(goodsId, parentId) {
+function addToCart(goodsId, parentId,actId) {
     var goods = new Object();
     var spec_arr = new Array();
     var fittings_arr = new Array();
     var number = 1;
     var formBuy = document.forms['ECS_FORMBUY'];
     var quick = 0;
+    var myactid = (typeof (actId) == "undefined") ? '' : parseInt(actId);
 
     // 检查是否有商品规格 
     if (formBuy) {
@@ -33,9 +34,9 @@ function addToCart(goodsId, parentId) {
     goods.quick = quick;
     goods.spec = spec_arr;
     goods.goods_id = goodsId;
+    goods.act_id = myactid;
     goods.number = number;
     goods.parent = (typeof (parentId) == "undefined") ? 0 : parseInt(parentId);
-
     $.post('index.php?m=default&c=flow&a=add_to_cart', {
         goods: $.toJSON(goods)
     }, function(data) {
@@ -959,11 +960,12 @@ function cancel_div() {
 /* *
  * 添加商品到购物车 
  */
-function addToCart_quick(goodsId, parentId) {
+function addToCart_quick(goodsId, parentId,actId) {
     var goods = new Object();
     var spec_arr = new Array();
     var fittings_arr = new Array();
     var number = 1;
+    var myactid = (typeof (actId) == "undefined") ? '' : parseInt(actId);
     var formBuy = document.forms['ECS_FORMBUY'];
     var quick = 0;
 
@@ -982,6 +984,7 @@ function addToCart_quick(goodsId, parentId) {
     goods.spec = spec_arr;
     goods.goods_id = goodsId;
     goods.number = number;
+    goods.act_id = myactid;
     goods.parent = (typeof (parentId) == "undefined") ? 0 : parseInt(parentId);
     $.post('index.php?m=default&c=flow&a=add_to_cart', {
         goods: $.toJSON(goods)

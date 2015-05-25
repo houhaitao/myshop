@@ -203,7 +203,7 @@ class FlowController extends CommonController {
             $result ['message'] = L('invalid_number');
         } else {
             // 更新：添加到购物车
-            if (model('Order')->addto_cart($goods->goods_id, $goods->number, $goods->spec, $goods->parent)) {
+            if (model('Order')->addto_cart($goods->goods_id, $goods->number, $goods->spec, $goods->parent, $goods->act_id)) {
                 if (C('cart_confirm') > 2) {
                     $result ['message'] = '';
                 } else {

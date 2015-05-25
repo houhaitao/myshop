@@ -1,4 +1,4 @@
-<?php
+<?php
 $data = array (
   'shop_name' => '良运手机商城',
   'shop_title' => '良运手机商城',
@@ -29,7 +29,7 @@ $data = array (
   'watermark_place' => '1',
   'watermark_alpha' => 65,
   'use_storage' => '1',
-  'market_price_rate' => 1.2,
+  'market_price_rate' => 1.1999999999999999555910790149937383830547332763671875,
   'rewrite' => '0',
   'integral_name' => '积分',
   'integral_scale' => 1,
@@ -37,10 +37,10 @@ $data = array (
   'sn_prefix' => 'ECS',
   'comment_check' => '1',
   'no_picture' => '/m/data/common/images/no_picture.gif',
-  'stats_code' => '&lt;script type=&quot;text/javascript&quot;&gt;
-var _bdhmProtocol = ((&quot;https:&quot; == document.location.protocol) ? &quot; https://&quot; : &quot; http://&quot;);
-document.write(unescape(&quot;%3Cscript src=\'&quot; + _bdhmProtocol + &quot;hm.baidu.com/h.js%3F946a699e4327f08dc97a37379e7e5c4d\' type=\'text/javascript\'%3E%3C/script%3E&quot;));
-&lt;/script&gt;
+  'stats_code' => '&lt;script type=&quot;text/javascript&quot;&gt;
+var _bdhmProtocol = ((&quot;https:&quot; == document.location.protocol) ? &quot; https://&quot; : &quot; http://&quot;);
+document.write(unescape(&quot;%3Cscript src=\'&quot; + _bdhmProtocol + &quot;hm.baidu.com/h.js%3F946a699e4327f08dc97a37379e7e5c4d\' type=\'text/javascript\'%3E%3C/script%3E&quot;));
+&lt;/script&gt;
 ',
   'cache_time' => 3600,
   'register_points' => '0',
@@ -80,7 +80,7 @@ document.write(unescape(&quot;%3Cscript src=\'&quot; + _bdhmProtocol + &quot;hm.
   'bought_goods' => 3,
   'article_number' => 8,
   'goods_name_length' => 7,
-  'price_format' => '5',
+  'price_format' => '2',
   'page_size' => 10,
   'sort_order_type' => '0',
   'sort_order_method' => '0',
@@ -189,5 +189,5 @@ document.write(unescape(&quot;%3Cscript src=\'&quot; + _bdhmProtocol + &quot;hm.
   'new_number' => 3,
   'hot_number' => 3,
   'promote_number' => 3,
-);
+);
 ?>

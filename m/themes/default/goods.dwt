@@ -106,7 +106,7 @@
         </div>
       </section>
       <div class="ect-padding-lr ect-padding-tb goods-submit">
-        <div><a type="botton" class="btn btn-info ect-btn-info ect-colorf" href="javascript:addToCart_quick({$goods.goods_id})">{$lang.buy_now}</a></div>
+        <div><a type="botton" class="btn btn-info ect-btn-info ect-colorf" href="javascript:addToCart_quick({$goods.goods_id},0,'{$act_id}')">{$lang.buy_now}</a></div>
        </div>
       <section class="user-tab ect-border-bottom0"> 
       <div id="is-nav-tabs" style="height:3.15em; display:none;"></div>
@@ -187,7 +187,7 @@ function changePrice(type)
   if(!/^[0-9]*$/.test(qty)){ qty = document.getElementById('back_number').value; }
   document.getElementById('goods_number').value = qty;
   var attr = getSelectedAttributes(document.forms['ECS_FORMBUY']);
-  $.get('{:url("goods/price")}', {'id':goodsId,'attr':attr,'number':qty}, function(data){
+  $.get('{:url("goods/price")}', {'id':goodsId,'attr':attr,'number':qty,'act_id':'{$act_id}'}, function(data){
     changePriceResponse(data);
   }, 'json');
 }

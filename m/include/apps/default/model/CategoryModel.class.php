@@ -43,6 +43,200 @@ class CategoryModel extends BaseModel {
     }
 
     /**
+     * 根据提供的商品的分类列表，提供商品所属的分类树
+     * @param $goods_list
+     * @example $goods_list = array('1'=>array(1,2,3));
+     * @param $all_cats
+     */
+    function get_goods_cats_list($goods_list,$all_cats)
+    {
+        $final = array();
+        foreach($goods_list as $k=>$v)
+        {
+            $tmp_list = array();
+            foreach($v as $_v)
+            {
+                $tree_list = array();
+                $this->format_tree($_v,$all_cats,$tree_list);
+                $tmp_list = array_merge($tmp_list,$tree_list);
+
+            }
+            $final[$k] = array_unique($tmp_list);
+        }
+        return $final;
+    }
+
+    function get_goods_ext_cats($goodids)
+    {
+        $sql = "select * from " . $this->pre . "goods_cat where goods_id in (".implode(',',$goodids).")";
+        $res = $this->query($sql);
+        $list = array();
+        if(is_array($res))
+        {
+            foreach($res as $v)
+            {
+                $list[] = $v['cat_id'];
+            }
+        }
+        return $list;
+    }
+
+    function get_all_cats()
+    {
+        $sql = "select * from " . $this->pre . "category";
+        $res = $this->query($sql);
+        return $res;
+    }
+
+
+    function format_tree($id,$tree,&$arr)
+    {
+        foreach($tree as $tr)
+        {
+            if($tr['cat_id']==$id)
+            {
+                array_push($arr,$tr['cat_id']);
+                if($tr['parent_id']!=0)
+                {
+                    $this->format_tree($tr['parent_id'],$tree,$arr);
+                }
+                break;
+            }
+
+
+        }
+
+    }
+
+    function format_goods_list($arr)
+    {
+        $keys = array_keys($arr);
+        $ext_ids = $this->get_goods_ext_cats($keys);
+        $secs = array();
+        $thirds = array();
+        $finals = array();
+        $goods_cats = array();
+        foreach($arr as $k=>$v)
+        {
+            $tmp = $v;
+            if(isset($ext_ids[$k]))
+            {
+                $tmp['cat_id'] = array_merge($tmp['cat_id'],$ext_ids[$k]);
+            }
+            $secs[$k] = $tmp;
+            $goods_cats[$k] = $tmp['cat_id'];
+        }
+        $all_cats = $this->get_all_cats();
+        $cats_data = $this->get_goods_cats_list($goods_cats,$all_cats);
+        $current_actives = $this->get_current_active();
+        foreach($secs as $k=>$v)
+        {
+            $tmp = $v;
+            if(isset($cats_data[$k]))
+            {
+                $tmp['cat_id'] = $cats_data[$k];
+            }
+            $tmp['active_id'] = 0;
+            $tmp['real_active_price'] = $tmp['real_promote_price'] > 0 ? $tmp['real_promote_price'] : $tmp['real_shop_price'];
+            if(is_array($current_actives))
+            {
+                foreach($current_actives as $active_k=>$active_v)
+                {
+                    $values = explode(',',$active_v['act_range_ext']);
+                    $zk_price = $tmp['real_market_price'];
+                    if($active_v['act_type']=='1') //减钱
+                    {
+                        $zk_price = $zk_price - $active_v['act_type_ext'];
+                    }
+                    elseif($active_v['act_type']=='2') //折扣
+                    {
+                        $zk_price = ($zk_price * $active_v['act_type_ext']) / 100;
+                    }
+                    else
+                    {
+                        continue;
+                    }
+                    if($active_v['act_range'] == '1') //分类
+                    {
+                        if(is_array($tmp['cat_id']))
+                        {
+                            foreach($tmp['catid'] as $_my)
+                            {
+                                if(in_array($_my, $values))
+                                {
+                                    if($tmp['real_active_price'] > $zk_price)
+                                    {
+                                        $tmp['real_active_price'] = $zk_price;
+                                        $tmp['active_id'] = $active_v['act_id'];
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    elseif($active_v['act_range'] == '2') //品牌
+                    {
+                        if(in_array($tmp['brand_id'], $values))
+                        {
+                            if($tmp['real_active_price'] > $zk_price)
+                            {
+                                $tmp['real_active_price'] = $zk_price;
+                                $tmp['active_id'] = $active_v['act_id'];
+                            }
+                        }
+                    }
+                    elseif($active_v['act_range'] == '3') //商品
+                    {
+                        if(in_array($k, $values))
+                        {
+                            if($tmp['real_active_price'] > $zk_price)
+                            {
+                                $tmp['real_active_price'] = $zk_price;
+                                $tmp['active_id'] = $active_v['act_id'];
+                            }
+                        }
+                    }
+                    else
+                    {
+                        continue;
+                    }
+                }
+            }
+            $tmp['active_info'] = $tmp['active_id'] > 0 ? $current_actives[$tmp['active_id']] : '';
+            $tmp['active_price'] = $tmp['real_active_price'] > 0 ? price_format($tmp['real_active_price']) : '';
+            $finals[$k] = $tmp;
+        }
+
+
+        return $finals;
+    }
+
+    function get_current_active()
+    {
+        $gmtime = gmtime();
+        $time = time();
+        $sql = "select * from " . $this->pre . "favourable_activity where start_time<={$gmtime} and end_time>={$gmtime}";
+        $res = $this->query($sql);
+        $currents = array();
+        if(is_array($res))
+        {
+            foreach($res as $r)
+            {
+                $xs_pre = strlen('限时抢购');
+                if(substr($r['act_name'],0,$xs_pre)=='限时抢购')
+                {
+                    $format_start_time = strtotime(date('Y-m-d ') . date("H:i:s", $r['start_time']+8*3600));
+                    $format_end_time = strtotime(date('Y-m-d ') . date("H:i:s", $r['end_time']+8*3600));
+                    if ($format_start_time > $time || $format_end_time < $time) {
+                        continue;
+                    }
+                }
+                $currents[$r['act_id']] = $r;
+            }
+        }
+        return $currents;
+    }
+
+    /**
      *
      * @access private
      * @param string $children 

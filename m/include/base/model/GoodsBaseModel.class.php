@@ -187,6 +187,32 @@ class GoodsBaseModel extends BaseModel {
         }
         $res = $this->query($sql);
 
+        $time = time();
+        $sql = "select * from " . $this->pre . "favourable_activity where start_time<={$gmtime} and end_time>={$gmtime}";
+        if (!empty($goods_id)) {
+            //$sql .= " AND CONCAT(',', user_rank, ',') LIKE '%" . $user_rank . "%'";
+        }
+        $_res = $this->query($sql);
+        $res = array();
+        if(is_array($_res))
+        {
+            foreach($_res as $r)
+            {
+                $xs_pre = strlen('限时抢购');
+                if(substr($r['act_name'],0,$xs_pre)=='限时抢购')
+                {
+                    $format_start_time = strtotime(date('Y-m-d ') . date("H:i:s", $r['start_time']+8*3600));
+                    $format_end_time = strtotime(date('Y-m-d ') . date("H:i:s", $r['end_time']+8*3600));
+                    if ($format_start_time > $time || $format_end_time < $time) {
+                        continue;
+                    }
+                }
+                $res[$r['act_id']] = $r;
+            }
+        }
+
+
+
         if (empty($goods_id)) {
             foreach ($res as $rows) {
                 $favourable[$rows['act_id']]['type'] = 'favourable';
@@ -303,7 +329,7 @@ class GoodsBaseModel extends BaseModel {
      *
      * @return  商品最终购买价格
      */
-    function get_final_price($goods_id, $goods_num = '1', $is_spec_price = false, $spec = array()) {
+    function get_final_price($goods_id, $goods_num = '1', $is_spec_price = false, $spec = array(),$actid=false) {
         $final_price = '0'; //商品最终购买价格
         $volume_price = '0'; //商品优惠价格
         $promote_price = '0'; //商品促销价格
@@ -329,7 +355,6 @@ class GoodsBaseModel extends BaseModel {
                 " WHERE g.goods_id = '" . $goods_id . "'" .
                 " AND g.is_delete = 0";
         $goods = $this->row($sql);
-
         /* 计算商品的促销价格 */
         if ($goods['promote_price'] > 0) {
             $promote_price = bargain_price($goods['promote_price'], $goods['promote_start_date'], $goods['promote_end_date']);
@@ -337,9 +362,19 @@ class GoodsBaseModel extends BaseModel {
             $promote_price = 0;
         }
 
+        if(!empty($actid))
+        {
+            $act_info = model('Activity')->get_activity_base_info($actid);
+            $ck_res = model('Activity')->check_xsqg_active_goods($act_info, $goods_id);
+            if($ck_res !== false)
+            {
+                $promote_price = $ck_res['real_promote_price'];
+            }
+        }
+
+
         //取得商品会员价格列表
         $user_price = $goods['shop_price'];
-
         //比较商品的促销价格，会员价格，优惠价格
         if (empty($volume_price) && empty($promote_price)) {
             //如果优惠价格，促销价格都为空则取会员价格
