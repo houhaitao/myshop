@@ -99,8 +99,10 @@ class ActivityController extends CommonController {
     {
         $this->parameter();
         $time = time();
-
-        $my_res = $this->model->table('favourable_activity')->field()->where("act_name like '限时抢购%' and start_time<=" . $time . " and end_time>=" . $time)->order('sort_order ASC')->select();
+        $sql = "act_name like '限时抢购%' and start_time<=" . $time . " and end_time>=" . $time;
+        $user_rank = ',' . $_SESSION['user_rank'] . ',';
+        $sql .= " AND CONCAT(',', user_rank, ',') LIKE '%" . $user_rank . "%'";
+        $my_res = $this->model->table('favourable_activity')->field()->where($sql)->order('sort_order ASC')->select();
         $list = array();
         $sayList = array();
         $goods_ids = array();

@@ -190,7 +190,7 @@ class GoodsBaseModel extends BaseModel {
         $time = time();
         $sql = "select * from " . $this->pre . "favourable_activity where start_time<={$gmtime} and end_time>={$gmtime}";
         if (!empty($goods_id)) {
-            //$sql .= " AND CONCAT(',', user_rank, ',') LIKE '%" . $user_rank . "%'";
+            $sql .= " AND CONCAT(',', user_rank, ',') LIKE '%" . $user_rank . "%'";
         }
         $_res = $this->query($sql);
         $res = array();
@@ -347,7 +347,7 @@ class GoodsBaseModel extends BaseModel {
 
         //取得商品促销价格列表
         /* 取得商品信息 */
-        $sql = "SELECT g.promote_price, g.promote_start_date, g.promote_end_date, " .
+        $sql = "SELECT g.goods_id,g.promote_price, g.promote_start_date, g.promote_end_date,g.cat_id,g.market_price, " .
                 "IFNULL(mp.user_price, g.shop_price * '" . $_SESSION['discount'] . "') AS shop_price " .
                 " FROM " . $this->pre . "goods AS g " .
                 " LEFT JOIN " . $this->pre . "member_price AS mp " .
@@ -362,16 +362,12 @@ class GoodsBaseModel extends BaseModel {
             $promote_price = 0;
         }
 
-        if(!empty($actid))
-        {
-            $act_info = model('Activity')->get_activity_base_info($actid);
-            $ck_res = model('Activity')->check_xsqg_active_goods($act_info, $goods_id);
-            if($ck_res !== false)
-            {
-                $promote_price = $ck_res['real_promote_price'];
-            }
-        }
-
+        $goods['real_promote_price'] = $promote_price;
+        $goods['real_market_price'] = $goods['market_price'];
+        $goods['real_shop_price'] = $goods['shop_price'];
+        $goods['cat_id'] = array($goods['cat_id']);
+        $goods = model('Category')->format_good_info($goods);
+        $promote_price = !empty($goods['active_info']) ? $goods['real_active_price'] : $promote_price;
 
         //取得商品会员价格列表
         $user_price = $goods['shop_price'];

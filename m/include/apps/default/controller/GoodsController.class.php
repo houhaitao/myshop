@@ -35,7 +35,13 @@ class GoodsController extends CommonController {
 
         // 获得商品的信息
         $goods = model('Goods')->get_goods_info($this->goods_id);
-        $act_id = isset($_REQUEST ['act_id']) ? intval($_REQUEST ['act_id']) : false;
+        $goods = model('Category')->format_good_info($goods);
+        if(!empty($goods['active_info']))
+        {
+            $goods['is_promote'] = 1;
+            $goods ['gmt_end_time'] = $goods['real_promote_price']>0 && $goods['real_promote_price']<$goods['real_active_price'] ? $goods['gmt_end_time'] : $goods['active_info']['gmt_end_time'];
+            $goods ['promote_price'] = $goods['real_promote_price']>0 && $goods['real_promote_price']<$goods['real_active_price'] ? $goods['promote_price'] : $goods['active_price'];
+        }
         // 如果没有找到任何记录则跳回到首页
         if ($goods === false) {
             ecs_header("Location: ./\n");
@@ -58,20 +64,7 @@ class GoodsController extends CommonController {
                     $goods ['bonus_money'] = price_format($goods ['bonus_money']);
                 }
             }
-            if(!empty($act_id))
-            {
-                $act_info = model('Activity')->get_activity_base_info($act_id);
-                $ck_res = model('Activity')->check_xsqg_active_goods($act_info, $this->goods_id);
-                if($ck_res !== false)
-                {
-                    $goods['promote_price'] = $ck_res['promote_price'];
-                    $goods['is_promote'] = true;
-                    $goods['gmt_end_time'] = $ck_res['gmt_end_time'];
-                    $this->assign('act_id', $act_id);
-                }
-            }
 
-            $goods ['comment_count'] = model('Goods')->get_record_count($this->goods_id);
             $this->assign('goods', $goods);
             $this->assign('goods_id', $goods ['goods_id']);
             $this->assign('promote_end_time', $goods ['gmt_end_time']);
@@ -184,19 +177,8 @@ class GoodsController extends CommonController {
             }
 
             $act_id = (isset($_REQUEST ['act_id'])) ? intval($_REQUEST ['act_id']) : false;
-            if(!empty($act_id))
-            {
-                $act_info = model('Activity')->get_activity_base_info($act_id);
-                $ck_res = model('Activity')->check_xsqg_active_goods($act_info, $this->goods_id);
-                if($ck_res !== false)
-                {
-                    $shop_price = $ck_res['real_promote_price'];
-                }
-            }
-            else
-            {
-                $shop_price = model('GoodsBase')->get_final_price($this->goods_id, $number, true, $attr_id);
-            }
+
+            $shop_price = model('GoodsBase')->get_final_price($this->goods_id, $number, true, $attr_id);
             $res ['result'] = price_format($shop_price * $number);
         }
         die(json_encode($res));

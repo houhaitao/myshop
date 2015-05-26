@@ -35,7 +35,7 @@ if ($this->_foreach['no']['total'] > 0):
       <?php echo $this->_var['lang']['btn_collect']; ?> </span> </section>
     <section class="ect-margin-tb ect-margin-lr ">
       <p><span class="pull-left"><?php echo $this->_var['lang']['amount']; ?>：<b class="ect-colory" id="ECS_GOODS_AMOUNT"></b></span><span class="pull-right"><?php echo $this->_var['lang']['sort_sales']; ?>：<?php echo $this->_var['sales_count']; ?> 件</span></p>
-      <p><?php if ($this->_var['goods']['is_promote'] && $this->_var['goods']['gmt_end_time']): ?><?php echo $this->_var['lang']['promote_price']; ?><?php else: ?><?php echo $this->_var['lang']['shop_price']; ?><?php endif; ?><?php if ($this->_var['goods']['is_promote'] && $this->_var['goods']['gmt_end_time']): ?> 
+      <p><?php if ($this->_var['goods']['is_promote'] && $this->_var['goods']['gmt_end_time']): ?><?php echo $this->_var['lang']['promote_price']; ?><?php else: ?><?php echo $this->_var['lang']['shop_price']; ?><?php endif; ?><?php if ($this->_var['goods']['is_promote'] && $this->_var['goods']['gmt_end_time']): ?>
         <?php echo $this->_var['goods']['promote_price']; ?> 
         <?php else: ?> 
         <?php echo $this->_var['goods']['shop_price_formated']; ?> 

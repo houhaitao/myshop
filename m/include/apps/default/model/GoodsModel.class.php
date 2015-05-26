@@ -46,12 +46,16 @@ class GoodsModel extends BaseModel {
         $row = $this->row($sql);
 
         if ($row !== false) {
+            $row['real_market_price'] = $row['market_price'];
+            $row['real_shop_price'] = $row['shop_price'];
             /* 用户评论级别取整 */
             $row['comment_rank'] = ceil($row['comment_rank']) == 0 ? 5 : ceil($row['comment_rank']);
 
             /* 获得商品的销售价格 */
             $row['market_price'] = price_format($row['market_price']);
             $row['shop_price_formated'] = price_format($row['shop_price']);
+            $row['cat_id'] = array($row['cat_id']);
+
 
             /* 修正促销价格 */
             if ($row['promote_price'] > 0) {
@@ -79,6 +83,7 @@ class GoodsModel extends BaseModel {
 
             $row['promote_price_org'] = $promote_price;
             $row['promote_price'] = price_format($promote_price);
+            $row['real_promoto_price'] = $promote_price;
 
             /* 修正重量显示 */
             $row['goods_weight'] = (intval($row['goods_weight']) > 0) ?

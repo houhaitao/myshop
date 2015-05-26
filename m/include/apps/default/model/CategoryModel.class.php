@@ -210,11 +210,104 @@ class CategoryModel extends BaseModel {
         return $finals;
     }
 
+    function format_good_info($info)
+    {
+        $keys = array($info['goods_id']);
+        $ext_ids = $this->get_goods_ext_cats($keys);
+        $goods_cats = array();
+        if(isset($ext_ids[$info['goods_id']]))
+        {
+            $info['cat_id'] = array_merge($info['cat_id'],$ext_ids[$info['goods_id']]);
+        }
+        $goods_cats[$info['goods_id']] = $info['cat_id'];
+        $all_cats = $this->get_all_cats();
+        $cats_data = $this->get_goods_cats_list($goods_cats,$all_cats);
+        $current_actives = $this->get_current_active();
+
+        if(isset($cats_data[$info['goods_id']]))
+        {
+            $info['cat_id'] = $cats_data[$info['goods_id']];
+        }
+        $info['active_id'] = 0;
+        $info['real_active_price'] = $info['real_promote_price'] > 0 ? $info['real_promote_price'] : $info['real_shop_price'];
+        if(is_array($current_actives))
+        {
+            foreach($current_actives as $active_k=>$active_v)
+            {
+                $values = explode(',',$active_v['act_range_ext']);
+                $zk_price = $info['real_market_price'];
+                if($active_v['act_type']=='1') //减钱
+                {
+                    $zk_price = $zk_price - $active_v['act_type_ext'];
+                }
+                elseif($active_v['act_type']=='2') //折扣
+                {
+                    $zk_price = ($zk_price * $active_v['act_type_ext']) / 100;
+                }
+                else
+                {
+                    continue;
+                }
+                if($active_v['act_range'] == '1') //分类
+                {
+                    if(is_array($info['cat_id']))
+                    {
+                        foreach($info['catid'] as $_my)
+                        {
+                            if(in_array($_my, $values))
+                            {
+                                if($info['real_active_price'] > $zk_price)
+                                {
+                                    $info['real_active_price'] = $zk_price;
+                                    $info['active_id'] = $active_v['act_id'];
+                                }
+                            }
+                        }
+                    }
+                }
+                elseif($active_v['act_range'] == '2') //品牌
+                {
+                    if(in_array($info['brand_id'], $values))
+                    {
+                        if($info['real_active_price'] > $zk_price)
+                        {
+                            $info['real_active_price'] = $zk_price;
+                            $info['active_id'] = $active_v['act_id'];
+                        }
+                    }
+                }
+                elseif($active_v['act_range'] == '3') //商品
+                {
+                    if(in_array($info['goods_id'], $values))
+                    {
+                        if($info['real_active_price'] > $zk_price)
+                        {
+                            $info['real_active_price'] = $zk_price;
+                            $info['active_id'] = $active_v['act_id'];
+                        }
+                    }
+                }
+                else
+                {
+                    continue;
+                }
+            }
+        }
+        $info['active_info'] = $info['active_id'] > 0 ? $current_actives[$info['active_id']] : '';
+        $info['active_price'] = $info['real_active_price'] > 0 ? price_format($info['real_active_price']) : '';
+
+
+
+        return $info;
+    }
+
     function get_current_active()
     {
         $gmtime = gmtime();
         $time = time();
         $sql = "select * from " . $this->pre . "favourable_activity where start_time<={$gmtime} and end_time>={$gmtime}";
+        $user_rank = ',' . $_SESSION['user_rank'] . ',';
+        $sql .= " AND CONCAT(',', user_rank, ',') LIKE '%" . $user_rank . "%'";
         $res = $this->query($sql);
         $currents = array();
         if(is_array($res))
@@ -222,6 +315,7 @@ class CategoryModel extends BaseModel {
             foreach($res as $r)
             {
                 $xs_pre = strlen('限时抢购');
+                $tmp = $r;
                 if(substr($r['act_name'],0,$xs_pre)=='限时抢购')
                 {
                     $format_start_time = strtotime(date('Y-m-d ') . date("H:i:s", $r['start_time']+8*3600));
@@ -229,8 +323,13 @@ class CategoryModel extends BaseModel {
                     if ($format_start_time > $time || $format_end_time < $time) {
                         continue;
                     }
+                    $tmp['gmt_end_time'] = strtotime(date('Y-m-d ') . date("H:i:s", $r['end_time']));
                 }
-                $currents[$r['act_id']] = $r;
+                else
+                {
+                    $tmp['gmt_end_time'] = $r['end_time'];
+                }
+                $currents[$r['act_id']] = $tmp;
             }
         }
         return $currents;
