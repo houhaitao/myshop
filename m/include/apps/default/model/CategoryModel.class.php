@@ -143,7 +143,7 @@ class CategoryModel extends BaseModel {
                 foreach($current_actives as $active_k=>$active_v)
                 {
                     $values = explode(',',$active_v['act_range_ext']);
-                    $zk_price = $tmp['real_market_price'];
+                    $zk_price = $tmp['real_shop_price'];
                     if($active_v['act_type']=='1') //减钱
                     {
                         $zk_price = $zk_price - $active_v['act_type_ext'];
@@ -235,7 +235,7 @@ class CategoryModel extends BaseModel {
             foreach($current_actives as $active_k=>$active_v)
             {
                 $values = explode(',',$active_v['act_range_ext']);
-                $zk_price = $info['real_market_price'];
+                $zk_price = $info['real_shop_price'];
                 if($active_v['act_type']=='1') //减钱
                 {
                     $zk_price = $zk_price - $active_v['act_type_ext'];

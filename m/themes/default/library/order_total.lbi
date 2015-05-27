@@ -13,7 +13,7 @@
   <!-- {/if} --> <br/>
   <!-- {/if} --> 
   {$lang.goods_all_price}:
-  <b class="ect-colory">{$total.goods_price_formated}</b>
+  <b class="ect-colory">{$total.goods_price_formated}111</b>
   <br />
   <!-- {if $total.discount gt 0} 折扣 --> 
   - {$lang.discount}:

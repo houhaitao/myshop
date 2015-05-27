@@ -184,7 +184,7 @@
                 <!-- {if $goods.is_shipping} -->(<span style="color:#FF0000">{$lang.free_goods}</span>)<!-- {/if} --> 
               </dt>
               <dd class="pull-left list-num">x {$goods.goods_number}</dd>
-              <dd class="pull-right">{$goods.formated_subtotal}</dd>
+              <dd class="pull-right">{$goods.formated_shoptotal}</dd>
             </dl>
           </li>
           <!-- {/foreach} -->

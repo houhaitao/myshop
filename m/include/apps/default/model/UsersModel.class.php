@@ -1437,7 +1437,7 @@ class UsersModel extends BaseModel {
                 $total['real_goods_count']++;
             }
 
-            $total['goods_price'] += $val['goods_price'] * $val['goods_number'];
+            $total['goods_price'] += $val['shop_price'] * $val['goods_number'];
             $total['market_price'] += $val['market_price'] * $val['goods_number'];
         }
 

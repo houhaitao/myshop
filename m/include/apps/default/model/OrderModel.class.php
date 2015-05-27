@@ -289,12 +289,12 @@ class OrderModel extends BaseModel {
      * @return  array   购物车商品数组
      */
     function cart_goods($type = CART_GENERAL_GOODS) {
-        $sql = "SELECT rec_id, user_id, goods_id, goods_name, goods_sn, goods_number, " .
-                "market_price, goods_price, goods_attr, is_real, extension_code, parent_id, is_gift, is_shipping, " .
-                "goods_price * goods_number AS subtotal " .
+        $sql = "SELECT c.rec_id, c.user_id, c.goods_id, c.goods_name, c.goods_sn, c.goods_number, " .
+                "c.market_price, c.goods_price, c.goods_attr, c.is_real, c.extension_code, c.parent_id, c.is_gift, c.is_shipping, " .
+                "c.goods_price * c.goods_number AS subtotal,g.shop_price,g.shop_price * c.goods_number as shoptotal " .
                 "FROM " . $this->pre .
-                "cart WHERE session_id = '" . SESS_ID . "' " .
-                "AND rec_type = '$type'";
+                "cart as c inner join ".$this->pre."goods as g on g.goods_id=c.goods_id  WHERE c.session_id = '" . SESS_ID . "' " .
+                "AND c.rec_type = '$type'";
 
         $arr = $this->query($sql);
 
@@ -303,7 +303,8 @@ class OrderModel extends BaseModel {
             $arr[$key]['formated_market_price'] = price_format($value['market_price'], false);
             $arr[$key]['formated_goods_price'] = price_format($value['goods_price'], false);
             $arr[$key]['formated_subtotal'] = price_format($value['subtotal'], false);
-
+            $arr[$key]['formated_shoptotal'] = price_format($value['shoptotal'], false);
+            $arr[$key]['formated_shop_price'] = price_format($value['shop_price'], false);
             if ($value['extension_code'] == 'package_buy') {
                 $arr[$key]['package_goods_list'] = model('PackageBase')->get_package_goods($value['goods_id']);
             }
@@ -430,12 +431,12 @@ class OrderModel extends BaseModel {
      * @param   integer $parent     基本件
      * @return  boolean
      */
-    function addto_cart($goods_id, $num = 1, $spec = array(), $parent = 0, $act_id=false) {
+    function addto_cart($goods_id, $num = 1, $spec = array(), $parent = 0) {
         ECTouch::err()->clean();
         $_parent_id = $parent;
 
         /* 取得商品信息 */
-        $sql = "SELECT g.goods_name, g.goods_sn, g.is_on_sale, g.is_real, " .
+        $sql = "SELECT g.goods_id,g.cat_id,g.goods_name, g.goods_sn, g.is_on_sale, g.is_real, " .
                 "g.market_price, g.shop_price AS org_price, g.promote_price, g.promote_start_date, " .
                 "g.promote_end_date, g.goods_weight, g.integral, g.extension_code, " .
                 "g.goods_number, g.is_alone_sale, g.is_shipping," .
@@ -1532,7 +1533,7 @@ class OrderModel extends BaseModel {
         }
 
         /* 查询购物车商品 */
-        $sql = "SELECT c.goods_id, c.goods_price * c.goods_number AS subtotal, g.cat_id, g.brand_id " .
+        $sql = "SELECT c.goods_id, c.goods_price * c.goods_number AS subtotal, g.cat_id, g.brand_id,g.shop_price * c.goods_number AS shoptotal " .
                 "FROM " . $this->pre . "cart AS c, " . $this->pre . "goods AS g " .
                 "WHERE c.goods_id = g.goods_id " .
                 "AND c.session_id = '" . SESS_ID . "' " .
@@ -1553,7 +1554,7 @@ class OrderModel extends BaseModel {
             $total_amount = 0;
             if ($favourable['act_range'] == FAR_ALL) {
                 foreach ($goods_list as $goods) {
-                    $total_amount += $goods['subtotal'];
+                    $total_amount += $goods['shoptotal'];
                 }
             } elseif ($favourable['act_range'] == FAR_CATEGORY) {
                 /* 找出分类id的子分类id */
@@ -1566,25 +1567,24 @@ class OrderModel extends BaseModel {
 
                 foreach ($goods_list as $goods) {
                     if (strpos(',' . $ids . ',', ',' . $goods['cat_id'] . ',') !== false) {
-                        $total_amount += $goods['subtotal'];
+                        $total_amount += $goods['shoptotal'];
                     }
                 }
             } elseif ($favourable['act_range'] == FAR_BRAND) {
                 foreach ($goods_list as $goods) {
                     if (strpos(',' . $favourable['act_range_ext'] . ',', ',' . $goods['brand_id'] . ',') !== false) {
-                        $total_amount += $goods['subtotal'];
+                        $total_amount += $goods['shoptotal'];
                     }
                 }
             } elseif ($favourable['act_range'] == FAR_GOODS) {
                 foreach ($goods_list as $goods) {
                     if (strpos(',' . $favourable['act_range_ext'] . ',', ',' . $goods['goods_id'] . ',') !== false) {
-                        $total_amount += $goods['subtotal'];
+                        $total_amount += $goods['shoptotal'];
                     }
                 }
             } else {
                 continue;
             }
-
             /* 如果金额满足条件，累计折扣 */
             if ($total_amount > 0 && $total_amount >= $favourable['min_amount'] && ($total_amount <= $favourable['max_amount'] || $favourable['max_amount'] == 0)) {
                 if ($favourable['act_type'] == FAT_DISCOUNT) {
@@ -1598,7 +1598,6 @@ class OrderModel extends BaseModel {
                 }
             }
         }
-
         return array('discount' => $discount, 'name' => $favourable_name);
     }
 
